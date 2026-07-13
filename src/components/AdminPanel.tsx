@@ -4,8 +4,6 @@ import { Plus, Edit2, Trash2, Save, X, LogIn, FileDown, LogOut } from 'lucide-re
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { auth } from '../firebase';
-import { signInAnonymously, signOut } from 'firebase/auth';
 
 interface AdminPanelProps {
   products: Product[];
@@ -38,23 +36,15 @@ export function AdminPanel({
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem('admin_auth') === 'true') {
-      signInAnonymously(auth).catch(console.error);
-    }
+    // Auth handled purely by session storage for simple password protection
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'pastelarica123') {
-      try {
-        await signInAnonymously(auth);
-        setIsAuthenticated(true);
-        sessionStorage.setItem('admin_auth', 'true');
-        toast.success('Login efetuado com sucesso!');
-      } catch (error) {
-        toast.error('Erro ao conectar com o servidor.');
-        console.error(error);
-      }
+      setIsAuthenticated(true);
+      sessionStorage.setItem('admin_auth', 'true');
+      toast.success('Login efetuado com sucesso!');
     } else {
       toast.error('Senha incorreta.');
     }
@@ -63,7 +53,6 @@ export function AdminPanel({
   const handleLogout = async () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('admin_auth');
-    await signOut(auth);
     toast.success('Você saiu da sessão administrativa.');
   };
 

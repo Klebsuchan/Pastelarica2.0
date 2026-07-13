@@ -60,11 +60,7 @@ export function useStore() {
       }
     };
     
-    const unsubAuth = auth.onAuthStateChanged(user => {
-      if (user) {
-        seedInitialData();
-      }
-    });
+    seedInitialData();
 
     const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
       const fetchedProducts: Product[] = [];
@@ -99,7 +95,6 @@ export function useStore() {
     });
 
     return () => {
-      unsubAuth();
       unsubProducts();
       unsubCategories();
       unsubSettings();
