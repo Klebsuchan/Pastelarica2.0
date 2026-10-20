@@ -1,9 +1,18 @@
+export type PastelSize = 'P' | 'M' | 'G';
+
+export interface ProductPrices {
+  P: number;
+  M: number;
+  G: number;
+}
+
 export interface Product {
   id: string;
   categoryId: string;
   name: string;
   description?: string;
   price: number;
+  prices?: ProductPrices;
   imageUrl?: string;
 }
 
@@ -19,4 +28,5 @@ export interface CartItem {
 
 export interface StoreSettings {
   whatsappNumber: string;
+  menuVersion?: string;
 }

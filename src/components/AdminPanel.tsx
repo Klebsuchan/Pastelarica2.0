@@ -95,7 +95,9 @@ export function AdminPanel({
           pdf.setFont('helvetica', 'bold');
           pdf.text(product.name, 20, yPos);
           
-          const priceText = `R$ ${product.price.toFixed(2).replace('.', ',')}`;
+          const priceText = product.prices
+            ? `P: R$ ${product.prices.P.toFixed(2).replace('.', ',')} | M: R$ ${product.prices.M.toFixed(2).replace('.', ',')} | G: R$ ${product.prices.G.toFixed(2).replace('.', ',')}`
+            : `R$ ${product.price.toFixed(2).replace('.', ',')}`;
           pdf.text(priceText, pageWidth - 20, yPos, { align: 'right' });
           
           if (product.description) {
@@ -135,7 +137,8 @@ export function AdminPanel({
     setFormData({
       id: Date.now().toString(),
       name: '',
-      price: 0,
+      price: 18,
+      prices: { P: 18, M: 23, G: 30 },
       categoryId: categories[0]?.id || '',
       description: '',
       imageUrl: ''
@@ -191,12 +194,19 @@ export function AdminPanel({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanedData: Product = {
+      ...(formData as Product),
+      price: formData.prices ? formData.prices.P : (formData.price || 0),
+    };
+    if (!cleanedData.prices) {
+      delete cleanedData.prices;
+    }
     if (isAdding) {
-      onAddProduct(formData as Product);
+      onAddProduct(cleanedData);
       setIsAdding(false);
       toast.success('Produto adicionado!');
     } else if (editingProduct) {
-      onUpdateProduct(formData as Product);
+      onUpdateProduct(cleanedData);
       setEditingProduct(null);
       toast.success('Produto atualizado!');
     }
@@ -315,22 +325,19 @@ export function AdminPanel({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Preço (R$)</label>
-                  <input 
-                    required
-                    type="number" 
-                    step="0.01"
-                    value={formData.price || ''}
-                    onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
-                    className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-black text-[#FF7A00]"
-                  />
-                </div>
-                <div>
                   <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Categoria</label>
                   <select 
                     required
                     value={formData.categoryId || ''}
-                    onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                    onChange={e => {
+                      const catId = e.target.value;
+                      const isAdicional = catId === 'c3';
+                      setFormData({
+                        ...formData,
+                        categoryId: catId,
+                        prices: isAdicional ? undefined : (formData.prices || { P: formData.price || 18, M: 23, G: 30 })
+                      });
+                    }}
                     className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-bold"
                   >
                     {categories.map(c => (
@@ -338,7 +345,77 @@ export function AdminPanel({
                     ))}
                   </select>
                 </div>
-                <div>
+
+                {formData.prices ? (
+                  <div className="md:col-span-2 grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Preço P (R$)</label>
+                      <input 
+                        required
+                        type="number" 
+                        step="0.01"
+                        value={formData.prices.P ?? ''}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFormData({
+                            ...formData,
+                            price: val,
+                            prices: { ...formData.prices!, P: val }
+                          });
+                        }}
+                        className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-black text-[#FF7A00]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Preço M (R$)</label>
+                      <input 
+                        required
+                        type="number" 
+                        step="0.01"
+                        value={formData.prices.M ?? ''}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFormData({
+                            ...formData,
+                            prices: { ...formData.prices!, M: val }
+                          });
+                        }}
+                        className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-black text-[#FF7A00]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Preço G (R$)</label>
+                      <input 
+                        required
+                        type="number" 
+                        step="0.01"
+                        value={formData.prices.G ?? ''}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setFormData({
+                            ...formData,
+                            prices: { ...formData.prices!, G: val }
+                          });
+                        }}
+                        className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-black text-[#FF7A00]"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Preço Único (R$)</label>
+                    <input 
+                      required
+                      type="number" 
+                      step="0.01"
+                      value={formData.price || ''}
+                      onChange={e => setFormData({...formData, price: parseFloat(e.target.value)})}
+                      className="w-full bg-[#050505] border border-[#1A1A1A] rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 transition-all font-black text-[#FF7A00]"
+                    />
+                  </div>
+                )}
+
+                <div className={formData.prices ? 'md:col-span-2' : ''}>
                   <label className="block text-xs font-black text-[#9ca3af] uppercase mb-2 tracking-widest">Imagem do Produto</label>
                   <div className="flex items-center gap-4">
                     {formData.imageUrl && (
@@ -377,7 +454,7 @@ export function AdminPanel({
               <tr className="border-b border-[#1A1A1A] text-[#6b7280] text-xs uppercase tracking-widest">
                 <th className="pb-4 px-3 font-black bg-transparent">Produto</th>
                 <th className="pb-4 px-3 font-black bg-transparent">Categoria</th>
-                <th className="pb-4 px-3 font-black bg-transparent">Preço</th>
+                <th className="pb-4 px-3 font-black bg-transparent">Preços</th>
                 <th className="pb-4 px-3 font-black bg-transparent text-right">Ações</th>
               </tr>
             </thead>
@@ -397,7 +474,15 @@ export function AdminPanel({
                       </div>
                     </td>
                     <td className="py-4 px-3 text-[#9ca3af] text-sm font-medium">{category?.name || '-'}</td>
-                    <td className="py-4 px-3 font-black text-[#FF7A00]">R$ {product.price.toFixed(2).replace('.', ',')}</td>
+                    <td className="py-4 px-3 font-black text-[#FF7A00] text-xs md:text-sm">
+                      {product.prices ? (
+                        <span>
+                          P: R$ {product.prices.P.toFixed(2).replace('.', ',')} | M: R$ {product.prices.M.toFixed(2).replace('.', ',')} | G: R$ {product.prices.G.toFixed(2).replace('.', ',')}
+                        </span>
+                      ) : (
+                        <span>R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                      )}
+                    </td>
                     <td className="py-4 px-3">
                       <div className="flex items-center justify-end gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
