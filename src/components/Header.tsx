@@ -1,93 +1,130 @@
 import React from 'react';
-import { ShoppingBag, Settings, Search } from 'lucide-react';
+import { ShoppingBag, Settings, ArrowLeft } from 'lucide-react';
 
 const logoUrl = '/pastelarica.png';
 
 interface HeaderProps {
   cartItemCount: number;
+  cartTotal?: number;
   onOpenCart: () => void;
   onNavigate: (view: 'home' | 'admin') => void;
+  currentView?: 'home' | 'admin';
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   showSearch?: boolean;
 }
 
-export function Header({ cartItemCount, onOpenCart, onNavigate, searchQuery, onSearchChange, showSearch }: HeaderProps) {
+export function Header({
+  cartItemCount,
+  cartTotal = 0,
+  onOpenCart,
+  onNavigate,
+  currentView = 'home',
+}: HeaderProps) {
+  const scrollToSection = (id: string) => {
+    if (currentView !== 'home') {
+      onNavigate('home');
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      return;
+    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <header className="bg-black/90 backdrop-blur-md px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] sticky top-0 z-40 border-b border-[#1A1A1A] shadow-xl">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex w-full md:w-auto justify-between items-center">
-          <div 
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => onNavigate('home')}
-          >
-            <div className="h-10 w-10 md:h-12 md:w-12 shrink-0">
-              <img 
-                src={logoUrl} 
-                alt="Pastelarica Logo" 
-                className="h-full w-full object-contain transition-transform group-hover:scale-105"
-              />
-            </div>
-            <div className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase text-white group-hover:text-[#FF7A00] transition-colors">
-              PASTELA<span className="text-[#FF7A00] group-hover:text-white transition-colors">RICA</span>
-            </div>
-          </div>
-          
-          <div className="md:hidden flex items-center gap-4">
-            <button 
-              onClick={() => onNavigate('admin')}
-              className="text-zinc-500 hover:text-white transition-opacity"
-              title="Painel Admin"
-            >
-              <Settings size={24} />
-            </button>
-            <button 
-              onClick={onOpenCart}
-              className="relative p-2.5 bg-[#FF7A00] text-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg"
-            >
-              <ShoppingBag size={22} strokeWidth={2} />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-white text-black border-2 border-[#FF7A00] text-xs font-black w-6 h-6 flex items-center justify-center rounded-full shadow-sm">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {showSearch && (
-          <div className="w-full md:flex-1 md:max-w-xs mx-auto md:mx-4 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              placeholder="Buscar pastéis ou porções..." 
-              className="w-full bg-[#111111] border border-[#222222] rounded-full pl-11 pr-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/50 focus:border-[#FF7A00]/50 transition-all font-medium placeholder:text-zinc-600"
-            />
-          </div>
-        )}
-        
-        <div className="hidden md:flex items-center gap-4 md:gap-6 shrink-0">
-          <span className="bg-black text-[#FF7A00] border border-[#FF7A00]/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">
-            Aberto
+    <header className="bg-[#070709]/90 backdrop-blur-xl px-3.5 sm:px-6 h-16 sm:h-20 sticky top-0 z-40 border-b border-white/[0.07] flex items-center">
+      <div className="max-w-6xl w-full mx-auto flex items-center justify-between gap-2 sm:gap-8">
+        {/* Zone 1: Brand Logo & Wordmark (Seamless, no square cutout box) */}
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex items-center gap-2 sm:gap-3 text-left group cursor-pointer focus:outline-none min-w-0 shrink-0"
+        >
+          <img
+            src={logoUrl}
+            alt="Pastelarica Logo"
+            referrerPolicy="no-referrer"
+            className="h-11 w-11 sm:h-14 sm:w-14 object-contain mix-blend-lighten transition-transform duration-200 group-hover:scale-105 shrink-0"
+          />
+          <span className="font-display text-xl sm:text-3xl font-black italic tracking-tighter uppercase text-white whitespace-nowrap">
+            PASTELA<span className="text-[#FF7A00]">RICA</span>
           </span>
+        </button>
 
-          <button 
-            onClick={() => onNavigate('admin')}
-            className="text-zinc-500 hover:text-white transition-opacity"
-            title="Painel Admin"
+        {/* Zone 2: Clean Single-Line Navigation Links */}
+        <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-zinc-400">
+          <button
+            type="button"
+            onClick={() => scrollToSection('cardapio-section')}
+            className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Settings size={24} />
+            Cardápio
           </button>
-          
-          <button 
-            onClick={onOpenCart}
-            className="relative p-3 bg-[#FF7A00] text-black rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg"
+          <button
+            type="button"
+            onClick={() => scrollToSection('cat-1')}
+            className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <ShoppingBag size={24} strokeWidth={2} />
+            Salgados
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToSection('cat-2')}
+            className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Doces
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToSection('cat-3')}
+            className="hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Adicionais
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate(currentView === 'admin' ? 'home' : 'admin')}
+            className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+              currentView === 'admin' ? 'text-[#FF7A00]' : 'hover:text-white'
+            }`}
+          >
+            {currentView === 'admin' ? 'Voltar à Loja' : 'Painel Admin'}
+          </button>
+        </nav>
+
+        {/* Zone 3: Primary Action */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigate(currentView === 'admin' ? 'home' : 'admin')}
+            className="md:hidden min-h-[42px] min-w-[42px] flex items-center justify-center rounded-xl bg-white/[0.04] border border-white/[0.08] text-zinc-400 hover:text-white active:scale-95 transition-all"
+            title={currentView === 'admin' ? 'Voltar ao Cardápio' : 'Área do Administrador'}
+            aria-label={currentView === 'admin' ? 'Voltar ao Cardápio' : 'Área do Administrador'}
+          >
+            {currentView === 'admin' ? <ArrowLeft size={19} /> : <Settings size={19} />}
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenCart}
+            className="relative min-h-[42px] sm:min-h-[44px] px-3 sm:px-4 py-2 bg-[#FF7A00] hover:bg-[#FF8C1A] text-black rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-[0_8px_24px_rgba(255,122,0,0.28)] active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0"
+          >
+            <ShoppingBag size={18} strokeWidth={2.4} className="shrink-0" />
+            <span className="font-extrabold tracking-tight">
+              {cartItemCount > 0 ? (
+                <span className="tabular-nums">
+                  R$ {cartTotal.toFixed(2).replace('.', ',')}
+                </span>
+              ) : (
+                <span>Sacola</span>
+              )}
+            </span>
             {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-white text-black border-2 border-[#FF7A00] text-xs font-black w-6 h-6 flex items-center justify-center rounded-full shadow-sm">
+              <span className="bg-black text-[#FF7A00] text-[11px] sm:text-xs font-black px-1.5 sm:px-2 py-0.5 rounded-lg tabular-nums">
                 {cartItemCount}
               </span>
             )}
@@ -97,3 +134,4 @@ export function Header({ cartItemCount, onOpenCart, onNavigate, searchQuery, onS
     </header>
   );
 }
+
